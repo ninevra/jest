@@ -185,6 +185,19 @@ test('ObjectContaining matches', () => {
   });
 });
 
+test('ObjectContaining recurses into other-realm objects', () => {
+  const other_realm = new TextEncoder().encodeInto(
+    'hello world',
+    new Uint8Array(100),
+  ); // returns {read: 11, written: 11} from Node
+  jestExpect({foo: other_realm}).toEqual({foo: {read: 11, written: 11}});
+  jestExpect(
+    objectContaining({foo: other_realm}).asymmetricMatch({
+      foo: {read: 11, written: 11, zed: 11},
+    }),
+  ).toEqual(true);
+});
+
 test('ObjectContaining does not match', () => {
   [
     objectContaining({foo: 'foo'}).asymmetricMatch({bar: 'bar'}),
